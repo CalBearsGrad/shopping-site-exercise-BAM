@@ -9,13 +9,15 @@ Authors: Joel Burton, Christian Fernandez, Meggie Mahnken, Katie Byers.
 from flask import Flask, render_template, redirect, flash
 import jinja2
 
+from flask import Flask, session
+
 import melons
 
 app = Flask(__name__)
 
 # A secret key is needed to use Flask sessioning features
 
-app.secret_key = 'this-should-be-something-unguessable'
+app.secret_key = 'Whollup'
 
 # Normally, if you refer to an undefined variable in a Jinja template,
 # Jinja silently ignores this. This makes debugging difficult, so we'll
@@ -48,7 +50,7 @@ def show_melon(melon_id):
     Show all info about a melon. Also, provide a button to buy that melon.
     """
 
-    melon = melons.get_by_id("meli")
+    melon = melons.get_by_id(melon_id)
     print melon
     return render_template("melon_details.html",
                            display_melon=melon)
@@ -63,10 +65,15 @@ def show_shopping_cart():
     # The logic here will be something like:
     #
     # - get the cart dictionary from the session
+    session['melon_id']
     # - create a list to hold melon objects and a variable to hold the total
     #   cost of the order
+    melon_object_list = []
+    total_cost = 0
     # - loop over the cart dictionary, and for each melon id:
+    for melon_id in session:
     #    - get the corresponding Melon object
+        melon = melons.get_by_id(melon_id)
     #    - compute the total cost for that type of melon
     #    - add this to the order total
     #    - add quantity and total cost as attributes on the Melon object
@@ -93,13 +100,31 @@ def add_to_cart(melon_id):
     #
     # - check if a "cart" exists in the session, and create one (an empty
     #   dictionary keyed to the string "cart") if not
-    # - check if the desired melon id is the cart, and if not, put it in
+    # - check if the desired melon id is in the cart, and if not, put it in
     # - increment the count for that melon id by 1
     # - flash a success message
     # - redirect the user to the cart page
 
-    return "Oops! This needs to be implemented!"
+    # session = {"cart": {melon_id: qty}}
+    if 'cart' in session:
+        pass
 
+    else:
+        session['cart'] = {}
+
+    if melon_id in session['cart']:
+        session['cart'][melon_id] += 1
+
+    else:
+        session['cart'][melon_id] = 1
+
+    print session
+
+    flash("You have successfully added a melon!")
+
+
+    return redirect("/cart")
+    # return "hello"
 
 @app.route("/login", methods=["GET"])
 def show_login():
@@ -145,4 +170,4 @@ def checkout():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, port=5000)
